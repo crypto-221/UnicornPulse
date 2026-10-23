@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ c.Company }} — Herd{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('explore') }}" class="pill back-link">← Back to explore</a>
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">{{ c.Company }}</h1>
+    <div class="page-sub">
+      <span class="industry-tag">{{ c.Industry }}</span>
+      &nbsp;·&nbsp; {% if c.City %}{{ c.City }}, {% endif %}{{ c.Country }}
+    </div>
+  </div>
+  <div class="stat-value" style="font-size:38px;">{{ c.Valuation_B | money }}</div>
+</div>
+
+<div class="panel grid grid-4 mb">
+  <div class="stat">
+    <div class="stat-label">Founded</div>
+    <div class="stat-value" style="font-size:24px;">{{ c['Year Founded'] | num }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Joined unicorn club</div>
+    <div class="stat-value" style="font-size:24px;">{{ c['Year Joined'] | num }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Years to unicorn</div>
+    <div class="stat-value" style="font-size:24px;">{{ c['Years To Unicorn'] | num }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Total funding raised</div>
+    <div class="stat-value" style="font-size:24px;">{% if c.Funding_B is not none %}{{ c.Funding_B | money }}{% else %}Undisclosed{% endif %}</div>
+  </div>
+</div>
+
+<div class="grid grid-2 mb">
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Capital efficiency</span></div>
+    <p class="body-text">
+      {% if c.Efficiency is not none %}
+        Every $1 raised turned into roughly <strong>${{ "{:,.1f}".format(c.Efficiency) }}</strong> of valuation.
+      {% else %}
+        Not enough disclosed funding data to compute this.
+      {% endif %}
+    </p>
+    <a class="btn" href="{{ url_for('compare', c1=c.Slug) }}">Compare this company →</a>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Select investors</span></div>
+    <p class="body-text">{{ c['Select Investors'] or "Not disclosed" }}</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head"><span class="panel-title">Other {{ c.Industry }} unicorns</span></div>
+  {% if similar %}
+  <table>
+    <thead><tr><th>Company</th><th>Country</th><th class="r">Valuation</th></tr></thead>
+    <tbody>
+      {% for s in similar %}
+      <tr>
+        <td><a class="company-link" href="{{ url_for('company_detail', slug=s.Slug) }}">{{ s.Company }}</a></td>
+        <td>{{ s.Country }}</td>
+        <td class="num mono">{{ s.Valuation_B | money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No other companies found in this sector.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

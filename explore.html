@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Explore — Herd{% endblock %}
+
+{% macro th(key, label, right=false) %}
+<th class="{{ 'sorted' if q.sort_by == key }}{{ ' r' if right }}">
+  <a href="{{ url_args(sort_by=key, order=q.next_order[key], page=None) }}">{{ label }}{% if q.sort_by == key %} {{ '▲' if q.order == 'asc' else '▼' }}{% endif %}</a>
+</th>
+{% endmacro %}
+
+{% block content %}
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">Explore the ledger</h1>
+    <div class="page-sub">Search, filter and sort all {{ "{:,}".format(site.total) }} tracked companies.</div>
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('explore') }}" class="panel mb">
+  <input type="hidden" name="sort_by" value="{{ q.sort_by }}">
+  <input type="hidden" name="order" value="{{ q.order }}">
+  <div class="grid grid-5f" style="align-items:end;">
+    <div>
+      <label class="field-label" for="fSearch">Search</label>
+      <input type="search" id="fSearch" name="search" value="{{ f.search }}" placeholder="Company name…">
+    </div>
+    <div>
+      <label class="field-label" for="fIndustry">Industry</label>
+      <select id="fIndustry" name="industry">
+        <option value="">All industries</option>
+        {% for i in industries %}<option value="{{ i }}" {{ 'selected' if i == f.industry }}>{{ i }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="field-label" for="fCountry">Country</label>
+      <select id="fCountry" name="country">
+        <option value="">All countries</option>
+        {% for c in countries %}<option value="{{ c }}" {{ 'selected' if c == f.country }}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="field-label" for="fMinVal">Min valuation ($B)</label>
+      <input type="number" id="fMinVal" name="min_val" value="{{ f.min_val }}" placeholder="0" min="0" step="0.5">
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Apply</button>
+      <a href="{{ url_for('explore') }}" class="btn">Reset</a>
+    </div>
+  </div>
+</form>
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">
+      {% if q.total %}Showing {{ q.start }}–{{ q.end }} of {{ "{:,}".format(q.total) }}{% else %}No results{% endif %}
+    </span>
+    <div class="pager">
+      {% if q.page > 1 %}<a class="btn" href="{{ url_args(page=q.page - 1) }}">← Prev</a>{% else %}<span class="btn disabled">← Prev</span>{% endif %}
+      <span class="pager-info">Page {{ q.page }} / {{ q.pages }}</span>
+      {% if q.page < q.pages %}<a class="btn" href="{{ url_args(page=q.page + 1) }}">Next →</a>{% else %}<span class="btn disabled">Next →</span>{% endif %}
+    </div>
+  </div>
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          {{ th('Company', 'Company') }}
+          {{ th('Industry', 'Industry') }}
+          {{ th('Country', 'Country') }}
+          {{ th('Year Founded', 'Founded') }}
+          {{ th('Year Joined', 'Joined') }}
+          {{ th('Funding_B', 'Funding', true) }}
+          {{ th('Valuation_B', 'Valuation', true) }}
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in q.rows %}
+        <tr>
+          <td><a class="company-link" href="{{ url_for('company_detail', slug=c.Slug) }}">{{ c.Company }}</a></td>
+          <td><span class="industry-tag">{{ c.Industry }}</span></td>
+          <td>{{ c.Country }}</td>
+          <td class="mono">{{ c['Year Founded'] | num }}</td>
+          <td class="mono">{{ c['Year Joined'] | num }}</td>
+          <td class="num mono">{{ c.Funding_B | money }}</td>
+          <td class="num mono">{{ c.Valuation_B | money }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="empty-state">No companies match those filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

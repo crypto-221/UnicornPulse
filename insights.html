@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hbars %}
+{% block title %}Insights — Herd{% endblock %}
+{% block content %}
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">Reading the herd</h1>
+    <div class="page-sub">A few things the data makes plain, told plainly.</div>
+  </div>
+</div>
+
+<div class="panel mb" style="padding:32px;">
+  <p class="lede">
+    Since 2007, <strong>{{ "{:,}".format(story.total_unicorns) }}</strong> private companies have crossed the
+    billion-dollar line, together valued at roughly
+    <strong>${{ "{:,.0f}".format(story.combined_valuation) }}B</strong> — and on average they
+    took just <strong>{{ story.avg_years }} years</strong> from founding to get there.
+  </p>
+</div>
+
+<div class="grid grid-2 mb">
+
+  <div class="panel">
+    <span class="pill gold">Heaviest single name</span>
+    <div class="insight-head">
+      <a href="{{ url_for('company_detail', slug=story.top_company_slug) }}" class="company-link">{{ story.top_company }}</a>
+    </div>
+    <p class="body-text">
+      At {{ story.top_company_val | money }}, it is the most valuable company in the dataset
+      ({{ story.top_company_country }}).
+    </p>
+  </div>
+
+  <div class="panel">
+    <span class="pill violet">Geographic center of gravity</span>
+    <div class="insight-head">{{ story.peak_country }}</div>
+    <p class="body-text">
+      {{ story.peak_country }}-based unicorns carry a combined {{ story.peak_country_val | money }}
+      ({{ "{:.0f}".format(story.peak_country_share) }}% of all valuation), ahead of
+      {{ story.runner_up }} at {{ story.runner_up_val | money }}.
+    </p>
+  </div>
+
+  <div class="panel">
+    <span class="pill green">Biggest minting quarter</span>
+    <div class="insight-head">{{ story.peak_quarter }}</div>
+    <p class="body-text">
+      {{ story.peak_quarter_n }} companies joined in this single quarter, adding
+      {{ story.peak_quarter_val | money }} of valuation — the highest of any quarter in the dataset.
+    </p>
+  </div>
+
+  <div class="panel">
+    <span class="pill">Most crowded sector</span>
+    <div class="insight-head">{{ story.top_industry }}</div>
+    <p class="body-text">
+      {{ story.top_industry_count }} unicorns call this sector home — more than any other category.
+    </p>
+  </div>
+
+  {% if story.eff %}
+  <div class="panel">
+    <span class="pill gold">Most capital-efficient</span>
+    <div class="insight-head">
+      <a href="{{ url_for('company_detail', slug=story.eff.Slug) }}" class="company-link">{{ story.eff.Company }}</a>
+    </div>
+    <p class="body-text">
+      Turned every dollar raised into roughly ${{ "{:,.0f}".format(story.eff.Efficiency) }} of valuation
+      ({{ story.eff.Funding_B | money }} raised) — the highest valuation-to-funding multiple in the dataset.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="panel">
+    <span class="pill violet">Fastest to unicorn status</span>
+    <div class="insight-head">
+      <a href="{{ url_for('company_detail', slug=story.fastest_slug) }}" class="company-link">{{ story.fastest_name }}</a>
+    </div>
+    <p class="body-text">
+      {% if story.fastest_years == 0 %}
+        Crossed the $1B line in the same calendar year it was founded
+        {%- if story.fastest_ties > 1 %} — one of {{ story.fastest_ties }} companies to do so (shown here: the most valuable of them){% endif %}.
+      {% else %}
+        Reached a $1B+ valuation just {{ story.fastest_years }} year{{ 's' if story.fastest_years != 1 }} after founding.
+      {% endif %}
+    </p>
+  </div>
+
+</div>
+
+<div class="panel">
+  <div class="panel-head"><span class="panel-title">Top investors by number of unicorn bets</span></div>
+  {{ hbars(investors, color='var(--violet)') }}
+  <div class="legend-note">Counted by the first-listed investor on each company's cap table.</div>
+</div>
+
+{% endblock %}

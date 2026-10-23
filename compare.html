@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Compare — Herd{% endblock %}
+{% block content %}
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">Compare</h1>
+    <div class="page-sub">Pick up to three companies and see them side by side.</div>
+  </div>
+</div>
+
+<form method="get" action="{{ url_for('compare') }}" class="panel mb">
+  <div class="grid grid-4f" style="align-items:end;">
+    {% for i in range(3) %}
+    <div>
+      <label class="field-label" for="c{{ i + 1 }}">Company {{ i + 1 }}</label>
+      <select id="c{{ i + 1 }}" name="c{{ i + 1 }}">
+        <option value="">— none —</option>
+        {% for o in options %}<option value="{{ o.slug }}" {{ 'selected' if o.slug == slugs[i] }}>{{ o.label }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Compare</button>
+      <a href="{{ url_for('compare') }}" class="btn">Clear</a>
+    </div>
+  </div>
+</form>
+
+{% if chosen %}
+<div class="panel">
+  <div class="table-scroll">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th></th>
+          {% for c in chosen %}
+          <th class="compare-head">
+            <a class="company-link compare-name" href="{{ url_for('company_detail', slug=c.Slug) }}">{{ c.Company }}</a>
+            <div class="stat-value" style="font-size:26px;">{{ c.Valuation_B | money }}</div>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for label, key, kind in rows %}
+        <tr>
+          <td class="row-label">{{ label }}</td>
+          {% for c in chosen %}
+          <td class="mono">
+            {%- if kind == 'money' %}{{ c[key] | money }}
+            {%- elif kind == 'mult' %}{{ c[key] | mult }}
+            {%- elif kind == 'int' %}{{ c[key] | num }}
+            {%- else %}{{ c[key] or '—' }}{% endif -%}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="panel"><div class="empty-state">Choose companies above and press “Compare”.</div></div>
+{% endif %}
+
+{% endblock %}

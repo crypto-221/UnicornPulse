@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Overview — Herd{% endblock %}
+{% block content %}
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">The unicorn ledger</h1>
+    <div class="page-sub">Every private company valued at $1B+, tracked from first funding to today.</div>
+  </div>
+  <span class="pill violet">{{ stats.new_this_year }} new in {{ stats.newest_year }}</span>
+</div>
+
+<div class="panel grid grid-4 mb">
+  <div class="stat">
+    <div class="stat-label">Total unicorns</div>
+    <div class="stat-value">{{ "{:,}".format(stats.total_unicorns) }}</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Combined valuation</div>
+    <div class="stat-value">${{ "{:,.1f}".format(stats.combined_valuation) }}<span class="unit">B</span></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Avg. years to unicorn</div>
+    <div class="stat-value">{{ stats.avg_years_to_unicorn }}<span class="unit">yrs</span></div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Countries represented</div>
+    <div class="stat-value">{{ stats.countries }}</div>
+  </div>
+</div>
+
+<div class="grid grid-8-4 mb">
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">New unicorns minted per year</span></div>
+    {{ timeline_svg }}
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">By valuation band</span></div>
+    <div class="donut" style="background: conic-gradient({{ donut }});">
+      <div class="donut-hole"><span>{{ stats.total_unicorns }}</span><small>companies</small></div>
+    </div>
+    <ul class="legend">
+      {% for b in bands %}
+      <li><i class="sw" style="background: {{ b.color }}"></i>{{ b.label }}<span class="mono">{{ b.count }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="panel-title">Top 5 by valuation</span>
+    <a href="{{ url_for('explore') }}" class="pill">See all →</a>
+  </div>
+  <table>
+    <thead>
+      <tr><th>Company</th><th>Industry</th><th>Country</th><th class="r">Valuation</th></tr>
+    </thead>
+    <tbody>
+      {% for c in top5 %}
+      <tr>
+        <td><a class="company-link" href="{{ url_for('company_detail', slug=c.Slug) }}">{{ c.Company }}</a></td>
+        <td><span class="industry-tag">{{ c.Industry }}</span></td>
+        <td>{{ c.Country }}</td>
+        <td class="num mono">{{ c.Valuation_B | money }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

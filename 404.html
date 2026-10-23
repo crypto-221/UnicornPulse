@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Not found — Herd</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="not-found">
+    <div class="nf-code">404</div>
+    <div class="nf-text">This page isn't on the ledger.</div>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to overview</a>
+  </div>
+</body>
+</html>

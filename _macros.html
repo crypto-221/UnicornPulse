@@ -1,0 +1,48 @@
+{# Pure HTML/CSS charts — rendered by Flask, no JavaScript. #}
+
+{% macro hbars(items, color='var(--violet)', prefix='', suffix='', decimals=0) %}
+{% set mx = (items | map(attribute='value') | max) if items else 1 %}
+<div class="hbars">
+  {% for it in items %}
+  <div class="hbar-row">
+    <div class="hbar-label" title="{{ it.label }}">{{ it.label }}</div>
+    <div class="hbar-track"><div class="hbar-fill" style="width: {{ (it.value / (mx or 1) * 100) | round(1) }}%; background: {{ color }};"></div></div>
+    <div class="hbar-val mono">{{ prefix }}{{ ("{:,.%df}" % decimals).format(it.value) }}{{ suffix }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro grouped_hbars(labels, a, b, name_a, name_b, color_a='var(--text-faint)', color_b='var(--violet)') %}
+{% set mx = ((a + b) | max) if labels else 1 %}
+<div class="legend-inline">
+  <span><i class="sw" style="background:{{ color_a }}"></i>{{ name_a }}</span>
+  <span><i class="sw" style="background:{{ color_b }}"></i>{{ name_b }}</span>
+</div>
+<div class="hbars">
+  {% for i in range(labels | length) %}
+  <div class="hbar-row hbar-row-2">
+    <div class="hbar-label" title="{{ labels[i] }}">{{ labels[i] }}</div>
+    <div class="hbar-tracks">
+      <div class="hbar-track"><div class="hbar-fill" style="width: {{ (a[i] / (mx or 1) * 100) | round(1) }}%; background: {{ color_a }};"></div><span class="hbar-val mono">{{ a[i] }}</span></div>
+      <div class="hbar-track"><div class="hbar-fill" style="width: {{ (b[i] / (mx or 1) * 100) | round(1) }}%; background: {{ color_b }};"></div><span class="hbar-val mono">{{ b[i] }}</span></div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro vbars(labels, values, color='var(--gold)', prefix='', suffix='') %}
+{% set mx = (values | max) if values else 1 %}
+<div class="vbars">
+  {% for i in range(labels | length) %}
+  <div class="vbar-col">
+    <div class="vbar-plot">
+      <div class="vbar-val mono">{{ prefix }}{{ "{:,.0f}".format(values[i]) }}{{ suffix }}</div>
+      <div class="vbar-fill" style="height: {{ (values[i] / (mx or 1) * 85) | round(1) }}%; background: {{ color }};"></div>
+    </div>
+    <div class="vbar-label">{{ labels[i] }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% from "_macros.html" import hbars, grouped_hbars, vbars %}
+{% block title %}Analytics — Herd{% endblock %}
+{% block content %}
+
+<div class="topline">
+  <div>
+    <h1 class="page-title">Analytics</h1>
+    <div class="page-sub">Where unicorns come from, what they build, and how capital-efficient they are.</div>
+  </div>
+</div>
+
+<div class="grid grid-2 mb">
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Top countries by unicorn count</span></div>
+    {{ hbars(countries_count, color='var(--violet)') }}
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Top countries by combined valuation</span></div>
+    {{ hbars(countries_val, color='var(--gold)', prefix='$', suffix='B') }}
+  </div>
+</div>
+
+<div class="grid grid-2 mb">
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Most crowded sectors</span></div>
+    {{ hbars(industries, color='var(--green)') }}
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Highest average valuation, by sector</span></div>
+    {{ hbars(industries_avg, color='var(--red)', prefix='$', suffix='B', decimals=1) }}
+    <div class="legend-note">Only sectors with at least 5 companies.</div>
+  </div>
+</div>
+
+<div class="panel mb" id="shift">
+  <div class="panel-head">
+    <span class="panel-title">Sector mix — {{ y1 }} vs. {{ y2 }}</span>
+    <form method="get" action="{{ url_for('analytics') }}#shift" class="inline-form">
+      <input type="hidden" name="year" value="{{ year }}">
+      <select name="y1" aria-label="First year">{% for y in years %}<option value="{{ y }}" {{ 'selected' if y == y1 }}>{{ y }}</option>{% endfor %}</select>
+      <span>vs.</span>
+      <select name="y2" aria-label="Second year">{% for y in years %}<option value="{{ y }}" {{ 'selected' if y == y2 }}>{{ y }}</option>{% endfor %}</select>
+      <button class="btn" type="submit">Update</button>
+    </form>
+  </div>
+  {% if shift.sectors %}
+    {{ grouped_hbars(shift.sectors, shift.a, shift.b, y1 ~ ' (' ~ shift.na ~ ' new)', y2 ~ ' (' ~ shift.nb ~ ' new)') }}
+  {% else %}
+    <div class="empty-state">No companies joined in those years.</div>
+  {% endif %}
+</div>
+
+<div class="grid grid-5-7 mb">
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Most capital-efficient unicorns</span></div>
+    <div class="legend-note" style="margin:0 0 12px;">Valuation ÷ total funding raised — higher means more value created per dollar invested.</div>
+    <table>
+      <thead><tr><th>Company</th><th class="r">Multiple</th></tr></thead>
+      <tbody>
+        {% for c in eff %}
+        <tr>
+          <td><a class="company-link" href="{{ url_for('company_detail', slug=c.Slug) }}">{{ c.Company }}</a></td>
+          <td class="num mono">{{ c.Efficiency | mult }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Valuation vs. funding raised</span></div>
+    {{ scatter_svg }}
+    <div class="legend-note">Each dot is one company (hover for details). Dots above the dashed line are valued higher than the capital they raised.</div>
+  </div>
+</div>
+
+<div class="panel" id="quarters">
+  <div class="panel-head">
+    <span class="panel-title">{{ year }} quarterly valuation added</span>
+    <form method="get" action="{{ url_for('analytics') }}#quarters" class="inline-form">
+      <input type="hidden" name="y1" value="{{ y1 }}">
+      <input type="hidden" name="y2" value="{{ y2 }}">
+      <select name="year" aria-label="Year">{% for y in years %}<option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>{% endfor %}</select>
+      <button class="btn" type="submit">Update</button>
+    </form>
+  </div>
+  {% if quarterly.quarters %}
+    {{ vbars(quarterly.quarters, quarterly.vals, color='var(--gold)', prefix='$', suffix='B') }}
+  {% else %}
+    <div class="empty-state">No data for {{ year }}.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
